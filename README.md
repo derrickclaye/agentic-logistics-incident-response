@@ -104,5 +104,11 @@ The second agent was the **Route Decision Agent**. The role of this agent is to 
 4. Delivery Delay Record after n8n **Payload Preparation and MCP Orchestration Agent** runs
 <img width="1906" height="45" alt="Screenshot 2025-10-07 at 7 43 39 PM" src="https://github.com/user-attachments/assets/7e05464f-49b9-47eb-88e0-a2c1282da006" />
 
+Successful n8n Execution
+<img width="1060" height="395" alt="Screenshot 2025-10-07 at 7 49 46 PM" src="https://github.com/user-attachments/assets/d7958712-f2e1-45b1-9b0f-dbad76b82541" />
+
+Script Logic to determine Optimal Route
+<img width="1060" height="395" alt="Screenshot 2025-10-07 at 7 49 46 PM" src="https://github.com/user-attachments/assets/eae34266-00de-449a-bec4-a6c12730b32a" />
+
 
 
