@@ -1,12 +1,12 @@
 # agentic-logistics-incident-response
 
-##System Overview
+## System Overview
 
 PepsiCo’s logistics operations required an intelligent automation system capable of dynamically calculating delay costs based on customer contracts, identifying the most cost-effective rerouting options while accounting for delivery constraints, and seamlessly coordinating execution with external logistics providers and customer communications — all without manual intervention.
 
 To address this, I designed and implemented an automated supply chain incident processing system that analyzes the financial impact of truck breakdowns, determines optimal rerouting strategies, and orchestrates execution with external logistics partners through AI agents and ServiceNow workflow automation.
 
-##System Components
+## System Components
 
 1. ServiceNow Scoped Application (2 tables, 2 AI Agents, 1 Use Case)
 
@@ -20,7 +20,7 @@ To address this, I designed and implemented an automated supply chain incident p
 
 6. ServiceNow MCP Server: The purpose of this MCP server is to update the Delivery Delay table. It adds records to the table when a truck delay is reported from Schneider. It also updates the status of a record when Schneider initiates execution of the new route and the retailer is made aware of the new route change by exposing the too **update_execution_status(route_id, status)**.
 
-##Implementation Steps
+## Implementation Steps
 
 1. The first step was to create a scoped application within ServiceNow. I decided to create a scoped application vs a global one because it was imperative that none of the data or application artifacts were compromised.
 
@@ -76,7 +76,7 @@ The second agent was the **Route Decision Agent**. The role of this agent is to 
 
 5. Leveraging the n8n platform I created a **Payload Preparation and MCP Orchestration Agent**. This agent is triggered by webhoook (which is called in the n8n trigger tool within the Route Decision Agent). After the agent is triggered the first step uses an AI Agent node which receives the data sent from ServiceNow and prepares the payloads each MCP Client requires. **Amazon Bedrock** provided the LLM connected to this node, which is **gpt-oss-20b** - a light weight model that uses an MoE architecture. After that node is a code node that just cleans up the payloads ensuring correct formatting. Next is another AI Agent node. This node has 3 MCP Client tools attached to it - each representing one of the MCP servers mentioned above in the System Components section. Since it is very important that this node calls each MCP client accordingly with their associated payloads, I used the **gpt-oss-120b** model. That particular model has very strong reasoning capabilities, is particularly good at function/tool calling and uses an MoE architecture, therefore during inference only the parameters that belong to the chosen experts are activated. So I figured those benefits outweighed the tradeoffs (very large, higher latency). 
 
-##Optimizations
+## Optimizations
 
 1. For the purpose of this project I was only working with one retailer, but in reality there would be dozens, if not hundreds of retailers that PepsiCo ships prepuces to. In turn, that means the n8n Data Preparation and MCP Orchestration Agent would consume a lot more retail MCPs. If this was the case then the agent would have to have some sort of context that would allow for it to use the appropriate MCP tool. Taking that into consideration I modified the n8n trigger script to also send over the customer_id along with the route_id, truck_id and chosen_option. This way, I could map the customer_id to the MCP Client node that belonged to that respective Retailer. 
 
