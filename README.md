@@ -76,6 +76,10 @@ The second agent was the **Route Decision Agent**. The role of this agent is to 
 
 5. Leveraging the n8n platform I created a **Payload Preparation and MCP Orchestration Agent**. This agent is triggered by webhoook (which is called in the n8n trigger tool within the Route Decision Agent). After the agent is triggered the first step uses an AI Agent node which receives the data sent from ServiceNow and prepares the payloads each MCP Client requires. **Amazon Bedrock** provided the LLM connected to this node, which is **gpt-oss-20b** - a light weight model that uses an MoE architecture. After that node is a code node that just cleans up the payloads ensuring correct formatting. Next is another AI Agent node. This node has 3 MCP Client tools attached to it - each representing one of the MCP servers mentioned above in the System Components section. Since it is very important that this node calls each MCP client accordingly with their associated payloads, I used the **gpt-oss-120b** model. That particular model has very strong reasoning capabilities, is particularly good at function/tool calling and uses an MoE architecture, therefore during inference only the parameters that belong to the chosen experts are activated. So I figured those benefits outweighed the tradeoffs (very large, higher latency). 
 
+## Architecture Diagram
+
+<img width="2481" height="1386" alt="Diagram" src="https://github.com/user-attachments/assets/13ad2a38-56c7-43cd-ae8a-246b0a55e085" />
+
 ## Optimizations
 
 1. For the purpose of this project I was only working with one retailer, but in reality there would be dozens, if not hundreds of retailers that PepsiCo ships prepuces to. In turn, that means the n8n Data Preparation and MCP Orchestration Agent would consume a lot more retail MCPs. If this was the case then the agent would have to have some sort of context that would allow for it to use the appropriate MCP tool. Taking that into consideration I modified the n8n trigger script to also send over the customer_id along with the route_id, truck_id and chosen_option. This way, I could map the customer_id to the MCP Client node that belonged to that respective Retailer. 
@@ -83,6 +87,22 @@ The second agent was the **Route Decision Agent**. The role of this agent is to 
 2. On the ServiceNow instance I created a new category choice for Incident records named "logistics" which would allow for a more accurately configured incident record.
 
 3. On the ServiceNow instance I created a new group - "PepsiCo Logistics" for the specific purpose of assigning that group the created incident records. 
+
+## Testing Results
+
+1. Delivery Delay Record with Status = pending
+<img width="1911" height="48" alt="Screenshot 2025-10-07 at 7 33 57 PM" src="https://github.com/user-attachments/assets/5f4510ca-4e81-463b-9f3c-07b812d060f2" />
+
+2. Delivery Delay and Incident Records after **Route Financial Analysis Agent** runs
+<img width="1897" height="43" alt="Screenshot 2025-10-07 at 7 37 43 PM" src="https://github.com/user-attachments/assets/d06a784f-8298-4c08-b099-21e261b9a242" />
+<img width="1899" height="386" alt="Screenshot 2025-10-07 at 7 40 07 PM" src="https://github.com/user-attachments/assets/19969f4f-9a87-414d-8c60-94f3ac99488c" />
+
+3. Delivery Delay and Incident Records after **Route Decision Agent** runs
+<img width="1906" height="45" alt="Screenshot 2025-10-07 at 7 41 50 PM" src="https://github.com/user-attachments/assets/91a9dd54-4739-42da-96af-16efae2645df" />
+<img width="1903" height="393" alt="Screenshot 2025-10-07 at 7 44 56 PM" src="https://github.com/user-attachments/assets/b388136c-383c-4008-8daa-14c48ec600c8" />
+
+4. Delivery Delay Record after n8n **Payload Preparation and MCP Orchestration Agent** runs
+<img width="1906" height="45" alt="Screenshot 2025-10-07 at 7 43 39 PM" src="https://github.com/user-attachments/assets/7e05464f-49b9-47eb-88e0-a2c1282da006" />
 
 
 
