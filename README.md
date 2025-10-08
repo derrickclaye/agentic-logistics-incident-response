@@ -1,4 +1,4 @@
-# agentic-logistics-incident-response
+# PepsiCo Agentic Logistics Incident Response
 
 ## System Overview
 
@@ -110,6 +110,25 @@ Successful n8n Execution
 Script Logic to determine Optimal Route then update Delivery Delay Record
 <img width="1065" height="521" alt="Screenshot 2025-10-07 at 7 58 06 PM" src="https://github.com/user-attachments/assets/122b8ae5-4dab-4d56-a988-5afafe1a30f8" />
 
+## Business Value
 
+**Reduced Downtime and Faster Recovery**
 
+Before: When a truck broke down or a route failed, human teams had to manually assess the situation, calculate penalties, choose new routes, and communicate with external logistics providers.
+After: This system automatically:
 
+- Routes the incident to ServiceNow via MCPs
+
+- Calculates contractual delay costs
+
+- Chooses the most cost-effective rerouting 
+
+- Dispatches AI agents to execute essentially every aspect of the system 
+
+Value:
+
+- faster incident resolution times
+
+- Less time trucks sit idle or goods spoil in transit
+
+- Direct cost savings on logistics 
