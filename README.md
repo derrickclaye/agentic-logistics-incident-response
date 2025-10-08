@@ -108,7 +108,8 @@ Successful n8n Execution
 <img width="1060" height="395" alt="Screenshot 2025-10-07 at 7 49 46 PM" src="https://github.com/user-attachments/assets/d7958712-f2e1-45b1-9b0f-dbad76b82541" />
 
 Script Logic to determine Optimal Route
-<img width="1060" height="395" alt="Screenshot 2025-10-07 at 7 49 46 PM" src="https://github.com/user-attachments/assets/eae34266-00de-449a-bec4-a6c12730b32a" />
+<img width="1065" height="521" alt="Screenshot 2025-10-07 at 7 58 06 PM" src="https://github.com/user-attachments/assets/122b8ae5-4dab-4d56-a988-5afafe1a30f8" />
+
 
 
 
