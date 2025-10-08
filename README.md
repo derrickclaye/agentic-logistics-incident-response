@@ -115,6 +115,7 @@ Script Logic to determine Optimal Route then update Delivery Delay Record
 **Reduced Downtime and Faster Recovery**
 
 Before: When a truck broke down or a route failed, human teams had to manually assess the situation, calculate penalties, choose new routes, and communicate with external logistics providers.
+
 After: This system automatically:
 
 - Routes the incident to ServiceNow via MCPs
