@@ -78,7 +78,7 @@ The second agent was the **Route Decision Agent**. The role of this agent is to 
 
 ## Architecture Diagram
 
-<img width="2481" height="1386" alt="Diagram" src="https://github.com/user-attachments/assets/13ad2a38-56c7-43cd-ae8a-246b0a55e085" />
+<img width="2481" height="1386" alt="Diagram" src="https://github.com/user-attachments/assets/11836bf1-dbb0-4341-87cf-b6a4b2d060af" />
 
 ## Optimizations
 
