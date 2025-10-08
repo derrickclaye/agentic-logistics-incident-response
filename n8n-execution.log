@@ -1,0 +1,143 @@
+{
+    "webhook": [
+        {
+            "headers": {
+            "host": "bigchef.app.n8n.cloud",
+            "user-agent": "ServiceNow/1.0",
+            "content-length": "169",
+            "accept": "application/json",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "4.223.224.92",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "SE",
+            "cf-ray": "98b1422bf56cc8c4-ARN",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "4.223.224.92, 104.23.221.209",
+            "x-forwarded-host": "bigchef.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-16-6f778b7769-7dmkt",
+            "x-is-trusted": "yes",
+            "x-real-ip": "4.223.224.92",
+            "x-snc-integration-source": "8d8d1433c322a650d7299dcd2b013160"
+            },
+            "params": {},
+            "query": {},
+            "body": {
+            "route_id": "214454",
+            "truck_id": "2843",
+            "customer_id": "1",
+            "chosen_option": {
+                "option_id": "opt-3",
+                "route_number": 12,
+                "distance_miles": 131,
+                "eta_minutes": 165,
+                "impact": "$0.00"
+            }
+            },
+            "webhookUrl": "https://bigchef.app.n8n.cloud/webhook-test/ee57dd14-a603-4d9c-8865-80fb62c8524e",
+            "executionMode": "test"
+        }
+    ],
+    "aiAgent1": [
+        {
+            "output": [
+            {
+                "type": "reasoning_content",
+                "reasoningText": {
+                "text": "We need to create a JSON object with keys: \"logistics\", \"retail\", \"servicenow\", \"other\". For the first two, they are identical to the input excluding customer_id field and the chosen_option.impact field. Wait: the instruction: “excluding the customer_id and chosen_option.impact fields.” So we must remove from the entire JSON object the fields: 'customer_id' and the field 'chosen_option' -> 'impact'. But we keep other nested fields.\n\nGiven input:\n{\n  \"route_id\":\"214454\",\n  \"truck_id\":\"2843\",\n  \"customer_id\":\"1\",\n  \"chosen_option\":{\n    \"option_id\":\"opt-3\",\n    \"route_number\":12,\n    \"distance_miles\":131,\n    \"eta_minutes\":165,\n    \"impact\":\"$0.00\"\n  }\n}\n\nWe need to produce 'logistics' with:\n{\n  \"route_id\":\"214454\",\n  \"truck_id\":\"2843\",\n  \"chosen_option\":{\n    \"option_id\":\"opt-3\",\n    \"route_number\":12,\n    \"distance_miles\":131,\n    \"eta_minutes\":165\n  }\n}\n\nSimilarly for retail same.\n\nSo logistics and retail identical as above.\n\nservicenow: { \"route_id\":\"214454\", \"status\":\"dispatched\" }\n\nother: { \"customer_id\":\"1\", \"impact\":\"$0.00\" }\n\nNow packaging into a single JSON object:\n\n{\n  \"logistics\": { ... },\n  \"retail\": { ... },\n  \"servicenow\": { \"route_id\":\"214454\", \"status\":\"dispatched\" },\n  \"other\": { \"customer_id\":\"1\", \"impact\":\"$0.00\" }\n}\n\nAlso ensure that JSON is valid. Okay.\n\nReturn only the JSON object. No formatting. Let's craft."
+                }
+            },
+            {
+                "type": "text",
+                "text": "{\"logistics\":{\"route_id\":\"214454\",\"truck_id\":\"2843\",\"chosen_option\":{\"option_id\":\"opt-3\",\"route_number\":12,\"distance_miles\":131,\"eta_minutes\":165}},\"retail\":{\"route_id\":\"214454\",\"truck_id\":\"2843\",\"chosen_option\":{\"option_id\":\"opt-3\",\"route_number\":12,\"distance_miles\":131,\"eta_minutes\":165}},\"servicenow\":{\"route_id\":\"214454\",\"status\":\"dispatched\"},\"other\":{\"customer_id\":\"1\",\"impact\":\"$0.00\"}}"
+            }
+            ],
+            "awsBedrockChatModel": {
+                "tokenUsageEstimate": {
+                    "completionTokens": 0,
+                    "promptTokens": 242,
+                    "totalTokens": 242
+                }
+            }
+        }
+    ],
+    "code": [
+        {
+            "logistics": {
+            "route_id": "214454",
+            "truck_id": "2843",
+            "chosen_option": {
+                "option_id": "opt-3",
+                "route_number": 12,
+                "distance_miles": 131,
+                "eta_minutes": 165
+            }
+            },
+            "retail": {
+            "route_id": "214454",
+            "truck_id": "2843",
+            "chosen_option": {
+                "option_id": "opt-3",
+                "route_number": 12,
+                "distance_miles": 131,
+                "eta_minutes": 165
+            }
+            },
+            "servicenow": {
+            "route_id": "214454",
+            "status": "dispatched"
+            },
+            "other": {
+            "customer_id": "1",
+            "impact": "$0.00"
+            }
+        }
+    ],
+    "aiAgent2": [
+        {
+            "output": [
+            {
+                "type": "reasoning_content",
+                "reasoningText": {
+                "text": "We need to produce final JSON with the three responses. The commentary responses are arrays with text objects containing JSON strings. We need to extract the JSON content.\n\nFirst response from execute_route: \n{\n  \"ok\": true,\n  \"message\": \"route selected\",\n  \"route_id\": \"ROUTE001\",\n  \"truck_id\": \"TRUCK123\",\n  \"chosen_option\": {\n    \"option_id\": \"OPT_A\",\n    \"route_number\": 1,\n    \"distance_miles\": 30,\n    \"eta_minutes\": 45\n  }\n}\n\nSecond response from notify_delivery_delay:\n{\n  \"ok\": true,\n  \"notification_id\": \"e8b30766-6a57-434c-8392-8ee69e0194a4\",\n  \"received_at\": \"2025-10-07T23:43:12.380922Z\",\n  \"route_id\": \"ROUTE001\",\n  \"truck_id\": \"TRUCK123\",\n  \"chosen_option\": {\n    \"option_id\": \"OPT_A\",\n    \"route_number\": 1,\n    \"distance_miles\": 30,\n    \"eta_minutes\": 45\n  }\n}\n\nThird response update_execution_status:\n{\n  \"route_id\": \"214454\",\n  \"updates\": [\n    {\n      \"student_id\": \"sn-0001\",\n      \"instance\": \"https://kura-labs-jul-4728-0001.lab.service-now.com\",\n      \"updated\": true,\n      \"status_code\": 200,\n      \"sys_id\": \"24a868c883a432107f44e8be50da1e44\",\n      \"error\": null\n    }\n  ]\n}\n\nNow format final output JSON with keys: logistics_response, retail_response, servicenow_response holding the objects.\n\n"
+                }
+            },
+            {
+                "type": "text",
+                "text": "{\n  \"logistics_response\": {\n    \"ok\": true,\n    \"message\": \"route selected\",\n    \"route_id\": \"ROUTE001\",\n    \"truck_id\": \"TRUCK123\",\n    \"chosen_option\": {\n      \"option_id\": \"OPT_A\",\n      \"route_number\": 1,\n      \"distance_miles\": 30,\n      \"eta_minutes\": 45\n    }\n  },\n  \"retail_response\": {\n    \"ok\": true,\n    \"notification_id\": \"e8b30766-6a57-434c-8392-8ee69e0194a4\",\n    \"received_at\": \"2025-10-07T23:43:12.380922Z\",\n    \"route_id\": \"ROUTE001\",\n    \"truck_id\": \"TRUCK123\",\n    \"chosen_option\": {\n      \"option_id\": \"OPT_A\",\n      \"route_number\": 1,\n      \"distance_miles\": 30,\n      \"eta_minutes\": 45\n    }\n  },\n  \"servicenow_response\": {\n    \"route_id\": \"214454\",\n    \"updates\": [\n      {\n        \"student_id\": \"sn-0001\",\n        \"instance\": \"https://kura-labs-jul-4728-0001.lab.service-now.com\",\n        \"updated\": true,\n        \"status_code\": 200,\n        \"sys_id\": \"24a868c883a432107f44e8be50da1e44\",\n        \"error\": null\n      }\n    ]\n  }\n}"
+            }
+            ],
+            "awsBedrockChatModel": {
+                "tokenUsageEstimate": {
+                    "completionTokens": 0,
+                    "promptTokens": 242,
+                    "totalTokens": 242
+                }
+            },
+            "logisticsMcp": {
+                "type": "text",
+                "text": "{\n  \"ok\": true,\n  \"message\": \"route selected\",\n  \"route_id\": \"ROUTE001\",\n  \"truck_id\": \"TRUCK123\",\n  \"chosen_option\": {\n    \"option_id\": \"OPT_A\",\n    \"route_number\": 1,\n    \"distance_miles\": 30,\n    \"eta_minutes\": 45\n  }\n}"
+            },
+            "retailMcp": {
+                "type": "text",
+                "text": "{\n  \"ok\": true,\n  \"notification_id\": \"e8b30766-6a57-434c-8392-8ee69e0194a4\",\n  \"received_at\": \"2025-10-07T23:43:12.380922Z\",\n  \"route_id\": \"ROUTE001\",\n  \"truck_id\": \"TRUCK123\",\n  \"chosen_option\": {\n    \"option_id\": \"OPT_A\",\n    \"route_number\": 1,\n    \"distance_miles\": 30,\n    \"eta_minutes\": 45\n  }\n}"
+            },
+            "serivenowlMcp": {
+                "type": "text",
+                "text": "{\n  \"route_id\": \"214454\",\n  \"updates\": [\n    {\n      \"student_id\": \"sn-0001\",\n      \"instance\": \"https://kura-labs-jul-4728-0001.lab.service-now.com\",\n      \"updated\": true,\n      \"status_code\": 200,\n      \"sys_id\": \"24a868c883a432107f44e8be50da1e44\",\n      \"error\": null\n    }\n  ]\n}"
+            },
+            "awsBedrockChatModel2": {
+                "tokenUsageEstimate": {
+                    "completionTokens": 0,
+                    "promptTokens": 1412,
+                    "totalTokens": 1412
+                }
+            }
+        }
+    ]
+}   
+
