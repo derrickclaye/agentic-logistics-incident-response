@@ -1,0 +1,271 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ee57dd14-a603-4d9c-8865-80fb62c8524e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -48
+      ],
+      "id": "217eb764-12bd-4077-b254-c731d0b6093a",
+      "name": "Webhook",
+      "webhookId": "ee57dd14-a603-4d9c-8865-80fb62c8524e"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data preparation agent for a logistics incident response system.\n\nHere is the data from ServiceNow:\n{{ JSON.stringify($json.body) }}\n\nInstructions:\n- Use the input exactly as given; do not add or rename any fields.\n- Prepare four payloads in a single JSON object:\n  1. \"logistics\": identical to the input excluding the customer_id and chosen_option.impact fields.\n  2. \"retail\": identical to the input excluding the customer_id and chosen_option.impact fields.\n  3. \"servicenow\": only { \"route_id\": <same_value>, \"status\": \"dispatched\" }.\n  4. \"other\": only { \"customer_id\": <same_value>, \"impact\": chosen_option.impact }.\n- Output **only** a single JSON object.\n- Do **not** include any reasoning, explanation, or commentary.\n- Ensure the output is valid JSON.\n\nReturn only the JSON object.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -48
+      ],
+      "id": "77a5a3a5-12b5-44c3-a574-62d50406889a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai.gpt-oss-20b-1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        160
+      ],
+      "id": "2003d329-bb24-4f84-b62e-beb2d88cacd4",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "HaBumf7HaeCHmAiu",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = JSON.parse($json.output[1].text);\n\nreturn {\n  logistics: data.logistics,\n  retail: data.retail,\n  servicenow: data.servicenow,\n  other: data.other\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "25d59bdf-be08-4f2c-8172-21572edb9fc7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an integration orchestrator. You are connected to three MCP Client nodes. Each of those nodes contains one tool that you will call using the MCP Client tool interface (HTTP Request). \nYou must call each MCP Client in sequence — one at a time — and only proceed to the next if the previous call succeeded.\n\n### Step-by-step Instructions\n\n1. **Logistics MCP Client**\n   - Connected at: http://34.197.44.143:8001/mcp\n   - Tool: \"execute_route\"\n   - Call using the MCP Client HTTP Request tool.\n   - Method: POST\n   - Payload:\n     ```json\n     {\n       \"name\": \"execute_route\",\n       \"arguments\": {\n         \"route_id\": {{ $json.logistics.route_id }},\n         \"truck_id\": {{ $json.logistics.truck_id }},\n         \"chosen_option\": {{ $json.logistics.chosen_option }}\n       }\n     }\n     ```\n   - If this call fails, stop execution and return:\n     ```json\n     { \"error\": \"Logistics MCP Client failed\", \"details\": <error_message> }\n     ```\n\n2. **Retail MCP Client**\n   - Connected at: http://34.197.44.143:8002/mcp\n   - Tool: \"notify_delivery_delay\"\n   - Call using the MCP Client HTTP Request tool.\n   - Method: POST\n   - Payload:\n     ```json\n     {\n       \"name\": \"notify_delivery_delay\",\n       \"arguments\": {\n         \"route_id\": {{ $json.retail.route_id }},\n         \"truck_id\": {{ $json.retail.truck_id }},\n         \"chosen_option\": {{ $json.retail.chosen_option }}\n       }\n     }\n     ```\n   - If this call fails, stop execution and return:\n     ```json\n     { \"error\": \"Retail MCP Client failed\", \"details\": <error_message> }\n     ```\n\n3. **ServiceNow MCP Client**\n   - Connected at: http://34.197.44.143:8000/mcp\n   - Tool: \"update_execution_status\"\n   - Call using the MCP Client HTTP Request tool.\n   - Method: POST\n   - Payload:\n     ```json\n     {\n       \"name\": \"update_execution_status\",\n       \"arguments\": {\n         \"route_id\": {{ $json.servicenow.route_id }},\n         \"status\": \"dispatched\"\n       }\n     }\n     ```\n   - If this call fails, stop execution and return:\n     ```json\n     { \"error\": \"ServiceNow MCP Client failed\", \"details\": <error_message> }\n     ```\n\n### Final Output\nAfter all three calls succeed, return only the combined result:\n```json\n{\n  \"logistics_response\": <response_from_execute_route>,\n  \"retail_response\": <response_from_notify_delivery_delay>,\n  \"servicenow_response\": <response_from_update_execution_status>\n}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "4106030a-638a-41ec-b499-829d05be09a3",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://34.197.44.143:8001/mcp",
+        "serverTransport": "httpStreamable",
+        "include": "selected",
+        "includeTools": [
+          "execute_route"
+        ],
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        256
+      ],
+      "id": "12ca9aa3-50b7-456a-8096-7968c308752e",
+      "name": "Logistics MCP"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://34.197.44.143:8002/mcp",
+        "serverTransport": "httpStreamable",
+        "include": "selected",
+        "includeTools": [
+          "notify_delivery_delay"
+        ],
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        272
+      ],
+      "id": "1be9d581-6ace-4822-a61d-e1d3408d282d",
+      "name": "Retail MCP"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://34.197.44.143:8000/mcp",
+        "serverTransport": "httpStreamable",
+        "authentication": "bearerAuth",
+        "include": "selected",
+        "includeTools": [
+          "update_execution_status"
+        ],
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        240
+      ],
+      "id": "b837507b-69ab-4cb2-b3c1-0299dffc8f9d",
+      "name": "ServiceNow MCP",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XgKyJOtx2bLoXXJM",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai.gpt-oss-120b-1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        160
+      ],
+      "id": "327f2e7a-7274-4fcf-8cea-7983e3ec7d0e",
+      "name": "AWS Bedrock Chat Model1",
+      "credentials": {
+        "aws": {
+          "id": "HaBumf7HaeCHmAiu",
+          "name": "AWS account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logistics MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retail MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ServiceNow MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fcfb9799-da3a-4c42-b20f-7e48c5371b31",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb13e9ad4d224ebdcb27e99bbf8af96461cba1678b5bd78efaada5a51602903d"
+  },
+  "id": "YTYgsthPkRCuUhRp",
+  "tags": []
+}
